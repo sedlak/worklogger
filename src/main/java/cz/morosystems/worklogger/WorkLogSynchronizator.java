@@ -184,7 +184,7 @@ public class WorkLogSynchronizator {
 		return new WorklogsBundle(specifics, result);
 	}
 
-	private String getWorklogs(CompanySpecifics specifics) throws IOException {
+	public String getWorklogs(CompanySpecifics specifics) throws IOException {
 		logVisualDelimiter();
 		logger.info("Getting {} worklogs for {} project", specifics.getPerspective(), specifics.getJiraProjectKey());
 		String restUrl = specifics.getJiraUrl()
@@ -223,7 +223,7 @@ public class WorkLogSynchronizator {
 		return result;
 	}
 
-	private Worklog createWorklogFromJson(JSONObject w) {
+	public Worklog createWorklogFromJson(JSONObject w) {
 		return new Worklog(
 				w.getJSONObject("issue").getString("key"),
 				w.getJSONObject("issue").getString("summary"),
@@ -233,7 +233,7 @@ public class WorkLogSynchronizator {
 		);
 	}
 
-	private void createWorklog(CompanySpecifics specifics, Worklog worklog) throws IOException {
+	public void createWorklog(CompanySpecifics specifics, Worklog worklog) throws IOException {
 		//Do MORO JIRI vytvarame comment aj s additional information: "Key+Summary"
 		String comment = specifics.commentAlsoWithIssueInfo() ?
 				worklog.getIssueKey() + " " + worklog.getIssueSummary() + " - " + worklog.getComment() :
@@ -338,6 +338,10 @@ public class WorkLogSynchronizator {
 		Properties props = new Properties();
 		props.load(new FileInputStream("wls.properties"));
 		return props;
+	}
+
+	public Properties getProperties(){
+		return properties;
 	}
 
 }
