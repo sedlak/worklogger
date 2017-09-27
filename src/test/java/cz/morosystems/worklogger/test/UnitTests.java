@@ -2,7 +2,6 @@ package cz.morosystems.worklogger.test;
 
 import static org.junit.Assert.assertEquals;
 
-import cz.morosystems.worklogger.CLIRunner;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -15,8 +14,16 @@ public class UnitTests {
 
   @Test
   public void testCliHelp(){
-    CLIRunner runner = new CLIRunner();
+   // CLIRunner runner = new CLIRunner();
     assertEquals("Hello world", "Hello world");
+    testString("a", "b");
+   //System.out.println("A2: "+ a);
+  }
+
+  private void testString(String a, String b){
+    a = "bla";
+    System.out.println("A: "+ a);
+
 
   }
 

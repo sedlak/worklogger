@@ -1,8 +1,10 @@
 package cz.morosystems.worklogger.synchronizator;
 
 import cz.morosystems.worklogger.common.CompanySpecifics;
+import cz.morosystems.worklogger.common.HttpMessages;
 import cz.morosystems.worklogger.common.Perspective;
 import cz.morosystems.worklogger.common.Worklog;
+import cz.morosystems.worklogger.common.WorklogManipulation;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -124,7 +126,7 @@ public class WorkLogSynchronizator {
 				if(daysToSync.contains(key)){
 					list.forEach(primaryWorklog -> {
 						boolean isInSync = mirrorBundle.getWorklogsMap().getOrDefault(key, new ArrayList<>())
-								.stream().anyMatch((mirrorWorklog -> mirrorBundle.getSpecifics().worklogCompare(primaryWorklog, mirrorWorklog)));
+								.stream().anyMatch((mirrorWorklog -> new WorklogManipulation().worklogCompare(primaryWorklog, mirrorWorklog, mirrorBundle.getSpecifics())));
 						primaryWorklog.setInSync(isInSync);
 						if(!isInSync){
 							try {
@@ -169,7 +171,7 @@ public class WorkLogSynchronizator {
 		JSONArray worklogsArray = new JSONArray(jsonString);
 		for (int i = 0; i < worklogsArray.length(); i++){
 			JSONObject w = worklogsArray.getJSONObject(i);
-			Worklog worklog = createWorklogFromJson(w);
+			Worklog worklog = new WorklogManipulation().createWorklogFromJson(w);
 			String key = worklog.getDate();
 			List<Worklog> list = result.getOrDefault(key, new ArrayList<>());
 
@@ -200,7 +202,7 @@ public class WorkLogSynchronizator {
 				+ "username=" + specifics.getUsername() + "&"
 				+ "projectKey=" + specifics.getJiraProjectKey();
 		logger.info("URL: {}", restUrl);
-		return makeHttpGet(specifics, restUrl);
+		return new HttpMessages().makeHttpGet(restUrl, specifics.getLoginData());
 	}
 
 	private Set<String> getParentIssueSubtasks(CompanySpecifics specifics) throws IOException {
@@ -208,8 +210,7 @@ public class WorkLogSynchronizator {
 		logger.info("Getting {} parent issue detail {}", specifics.getPerspective(), parentIssueKey);
 		String restUrl = specifics.getJiraUrl() + "/rest/api/2/issue/" + parentIssueKey;
 		logger.info("URL: {}", restUrl);
-		String parentIssueJsonString = makeHttpGet(specifics, restUrl);
-
+		String parentIssueJsonString = new HttpMessages().makeHttpGet(restUrl, specifics.getLoginData());
 		Set<String> result = new HashSet<>();
 		result.add(parentIssueKey);
 
@@ -226,15 +227,6 @@ public class WorkLogSynchronizator {
 		return result;
 	}
 
-	public Worklog createWorklogFromJson(JSONObject w) {
-		return new Worklog(
-				w.getJSONObject("issue").getString("key"),
-				w.getJSONObject("issue").getString("summary"),
-				w.getString("dateStarted"),
-				w.getString("comment"),
-				w.getInt("timeSpentSeconds")
-		);
-	}
 
 	public void createWorklog(CompanySpecifics specifics, Worklog worklog) throws IOException {
 		//Do MORO JIRI vytvarame comment aj s additional information: "Key+Summary"
@@ -253,54 +245,7 @@ public class WorkLogSynchronizator {
 				+ "}";
 
 		logger.info("Creating {} worklog: {}", specifics.getPerspective(), json);
-		makeHttpPost(specifics, json);
-	}
-
-	private void makeHttpPost(CompanySpecifics specifics, String json) throws IOException {
-		String url = specifics.getJiraUrl() + "/rest/api/2/issue/" + specifics.getJiraIssueKey() + "/worklog/";
-		logger.info("POST URL: {}", url);
-		URL obj = new URL(url);
-		HttpURLConnection con = (HttpURLConnection) obj.openConnection();
-		con.setRequestMethod("POST");
-		con.setRequestProperty("Content-Type", "application/json");
-		con.setRequestProperty("Authorization", "Basic " + specifics.getLoginData());
-		// Send post request
-		con.setDoOutput(true);
-		OutputStreamWriter w = new OutputStreamWriter(con.getOutputStream(), "UTF-8");
-		w.write(json);
-		w.close();
-
-		int responseCode = 0;
-		try{
-			responseCode = con.getResponseCode();
-		}catch (IOException e){
-			logger.error("Unable to get response code", e);
-		}
-
-		String result = null;
-		try{
-			InputStream response = con.getInputStream();
-			result = IOUtils.toString(response);
-		}catch (IOException e){
-			logger.error("Unable to get response body", e);
-		}
-
-		if(responseCode != 201){
-			logger.error("Response Code: {}", responseCode);
-			logger.error("Response Body: {}", result);
-			throw new IOException("Nepodarilo sa zapisat pracu! ResponseCode = " + responseCode);
-		}
-	}
-
-	private String makeHttpGet(CompanySpecifics specifics, String restUrl) throws IOException {
-		URLConnection connection = new URL(restUrl).openConnection();
-		connection.setRequestProperty("Accept-Charset", "UTF-8");
-		connection.setRequestProperty("Authorization", "Basic " + specifics.getLoginData());
-		InputStream response = connection.getInputStream();
-		String result = IOUtils.toString(response);
-		logger.info("Successfully retrieved response");
-		logger.debug("JSON: {}", result);
-		return result;
+		new HttpMessages().makeHttpPost(json, specifics.getJiraUrl()+ "/rest/api/2/issue/" + specifics.getJiraIssueKey() + "/worklog/", specifics.getLoginData());
 	}
 
 	private String getStartOfCurrentPeriod() {

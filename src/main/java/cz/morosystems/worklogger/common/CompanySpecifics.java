@@ -64,17 +64,8 @@ public class CompanySpecifics {
 		return getProperty("jiraParentIssueKey");
 	}
 
-	public boolean worklogCompare(Worklog primaryWorklog, Worklog mirrorWorklog) {
-		if(commentAlsoWithIssueInfo()){
-			return (primaryWorklog.getTimeSpentSeconds() == mirrorWorklog.getTimeSpentSeconds()
-					&& mirrorWorklog.getComment().contains(primaryWorklog.getIssueKey()));
-		}else{
-			return (primaryWorklog.getTimeSpentSeconds() == mirrorWorklog.getTimeSpentSeconds());
-				//&& mirrorWorklog.getComment().contains(primaryWorklog.getComment());
-		}
-	}
-
-	private String getProperty(String key){
+		private String getProperty(String key){
 		return props.getProperty(sequenceNumber + "." + perspective.name() + "." + key);
 	}
-}
+
+	}

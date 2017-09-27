@@ -2,14 +2,11 @@ package cz.morosystems.worklogger;
 
 import cz.morosystems.worklogger.daylogger.UserWorkManager;
 import cz.morosystems.worklogger.synchronizator.WorkLogSynchronizator;
-import java.io.IOException;
-import java.net.URISyntaxException;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,6 +25,7 @@ public class CLIRunner {
 
 		try {
 			// parse the command line arguments
+			initialize();
 			CommandLine cmdLine = parser.parse(opts, args);
 
 			if (cmdLine.hasOption("logwork")) {
@@ -43,9 +41,16 @@ public class CLIRunner {
 
 		} catch (Exception e) {
 			logger.error("Oooops, problem!", e);
-			// nothing more to do about it
-			// exit with error code 1
 			System.exit(1);
 		}
+	}
+
+	private void initialize(){
+		opts = new Options().
+					addOption("sync", "Synchronize.").
+					addOption("logwork", "Run work logging.");
+		parser = new DefaultParser();
+		formatter = new HelpFormatter();
+
 	}
 }
