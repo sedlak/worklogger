@@ -7,15 +7,9 @@ import com.atlassian.jira.rest.client.api.domain.SearchResult;
 import com.atlassian.jira.rest.client.internal.async.AsynchronousJiraRestClientFactory;
 import com.atlassian.util.concurrent.Promise;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStreamWriter;
-import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.URLConnection;
 import java.util.HashMap;
-import org.apache.commons.io.IOUtils;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,9 +17,9 @@ import org.slf4j.LoggerFactory;
 /**
  * Created by moro on 9/27/2017.
  */
-public class JiraRestManager {
+public class JiraManager {
 
-  private static final Logger logger = LoggerFactory.getLogger(JiraRestManager.class);
+  private static final Logger logger = LoggerFactory.getLogger(JiraManager.class);
 
   public void writeWorklog(CompanySpecifics specifics, Worklog worklog) throws IOException {
     String comment = specifics.commentAlsoWithIssueInfo() ?
@@ -33,6 +27,11 @@ public class JiraRestManager {
         worklog.getComment();
 
     String dateStarted = worklog.getDateStarted();
+    /*
+    * String dateStarted = worklog.getDateStarted().contains("+") ?
+				worklog.getDateStarted() :
+				worklog.getDateStarted() + "+0000";
+				*/
 
     String json = "{"
         + "\"comment\": " + JSONObject.quote(comment) + ","
@@ -43,32 +42,25 @@ public class JiraRestManager {
     logger.info("Creating {} worklog: {}", specifics.getPerspective(), json);
     String url =
         specifics.getJiraUrl() + "/rest/api/2/issue/" + worklog.getIssueKey() + "/worklog/";
-    new HttpMessages().makeHttpPost(json, url, specifics.getLoginData());
+    new HttpClient().makeHttpPost(json, url, specifics.getLoginData());
   }
 
   public HashMap<String, Issue> getWorkingIssuesOfUser(String jiraUri, String credentials)
       throws URISyntaxException {
-    logger.info("Connecting to {}", jiraUri);
-    //neposielame priamo http request, ale vyuzivame Jira Java Api
-    AsynchronousJiraRestClientFactory factory = new AsynchronousJiraRestClientFactory();
-    URI serverUri = new URI(jiraUri);
-    JiraRestClient restClient = factory
-        .create(serverUri, builder -> builder.setHeader("Authorization", "Basic " + credentials));
-    SearchRestClient searchClient = restClient.getSearchClient();
-    Promise<SearchResult> searchPromise = searchClient
-        .searchJql("(status changed TO resolved by currentUser() AFTER startOfDay()) OR "
-            + "(status changed to \"In progress\" by currentUser() and assignee = currentUser() and status = \"In progress\")  OR "
-            + "(status changed to \"In progress\" by currentUser()  AFTER startOfDay())");
+    String searchQuery = "(status changed TO resolved by currentUser() AFTER startOfDay()) OR "
+        + "(status changed to \"In progress\" by currentUser() and assignee = currentUser() and status = \"In progress\")  OR "
+        + "(status changed to \"In progress\" by currentUser()  AFTER startOfDay())";
+    SearchResult searchResult = new HttpClient().searchJql(jiraUri, credentials, searchQuery);
     HashMap<String, Issue> issuesMap = new HashMap<>();
-    searchPromise.claim().getIssues().forEach(x -> issuesMap.put(x.getKey(), x));
+    searchResult.getIssues().forEach(x -> issuesMap.put(x.getKey(), x));
     return issuesMap;
   }
 
+  public String getWorklogsFromTimeSheet(CompanySpecifics specifics, String startDay, String endDay) throws IOException {
+    return getWorklogsFromTimeSheet(specifics, startDay, endDay, "");
+  }
 
-
-
-
-  public String getWorklogs(CompanySpecifics specifics, String startDay, String endDay) throws IOException {
+  public String getWorklogsFromTimeSheet(CompanySpecifics specifics, String startDay, String endDay, String additionalSelectionCriteria) throws IOException {
     logger.info("Getting {} worklogs for {} project", specifics.getPerspective(), specifics.getJiraProjectKey());
     String restUrl = specifics.getJiraUrl()
         //rest api
@@ -77,11 +69,18 @@ public class JiraRestManager {
         + "?"
         + "dateFrom=" + startDay + "&"
         + "dateTo=" + endDay + "&"
-        + "username=" + specifics.getUsername();// + "&"
+        + "username=" + specifics.getUsername()// + "&"
+        + additionalSelectionCriteria;
     //+ "projectKey=" + specifics.getJiraProjectKey();
     logger.info("URL: {}", restUrl);
-    return new HttpMessages().makeHttpGet(restUrl, specifics.getLoginData());
+    return new HttpClient().makeHttpGet(restUrl, specifics.getLoginData());
   }
 
+  public String getIssueDetail(CompanySpecifics specifics, String issueKey) throws IOException {
+    String restUrl = specifics.getJiraUrl() + "/rest/api/2/issue/" + issueKey;
+    logger.info("URL: {}", restUrl);
+    return new HttpClient().makeHttpGet(restUrl, specifics.getLoginData());
+
+  }
 
   }

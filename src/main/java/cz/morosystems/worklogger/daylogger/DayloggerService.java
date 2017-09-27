@@ -2,10 +2,10 @@ package cz.morosystems.worklogger.daylogger;
 
 import com.atlassian.jira.rest.client.api.domain.Issue;
 import cz.morosystems.worklogger.common.CompanySpecifics;
-import cz.morosystems.worklogger.common.JiraRestManager;
+import cz.morosystems.worklogger.common.JiraManager;
 import cz.morosystems.worklogger.common.Perspective;
 import cz.morosystems.worklogger.common.Worklog;
-import cz.morosystems.worklogger.common.WorklogManipulation;
+import cz.morosystems.worklogger.common.WorklogService;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -22,16 +22,16 @@ import org.json.JSONObject;
 /**
  * Created by moro on 9/18/2017.
  */
-public class UserWorkManager {
+public class DayloggerService {
 
   CompanySpecifics primarySpecific;
-  JiraRestManager jiraRestManager;
+  JiraManager jiraManager;
 
-  public UserWorkManager(String connectionPropertiesFileName)
+  public DayloggerService(String connectionPropertiesFileName)
       throws URISyntaxException, IOException {
     primarySpecific = new CompanySpecifics(1, Perspective.PRIMARY,
         loadProperties(connectionPropertiesFileName));
-    jiraRestManager = new JiraRestManager();
+    jiraManager = new JiraManager();
 
   }
 
@@ -40,10 +40,10 @@ public class UserWorkManager {
     List<Integer> timeSpent = computeSpentTime(8, workingIssuesOfUser.size());
     ArrayList<Issue> listWorkingIssuesOfUser = new ArrayList<>(workingIssuesOfUser.values());
     for (int i = 0; i < listWorkingIssuesOfUser.size(); i++) {
-      Worklog worklog = new WorklogManipulation()
+      Worklog worklog = new WorklogService()
           .createWorkLogFromIssue(listWorkingIssuesOfUser.get(i),
               timeSpent.get(i) * 60 * 60);
-      jiraRestManager.writeWorklog(primarySpecific, worklog);
+      jiraManager.writeWorklog(primarySpecific, worklog);
     }
   }
 
@@ -71,9 +71,9 @@ public class UserWorkManager {
         issuesOfUserWorkingOn.size()); //TODO: je to nepresne
     ArrayList<Issue> issues = new ArrayList<Issue>(issuesOfUserWorkingOn.values());
     for (int i = 0; i < issues.size(); i++) {
-      Worklog worklog = new WorklogManipulation()
+      Worklog worklog = new WorklogService()
           .createWorkLogFromIssue(issues.get(i), timeSpent.get(i) * 60 * 60);
-      jiraRestManager.writeWorklog(primarySpecific, worklog);
+      jiraManager.writeWorklog(primarySpecific, worklog);
     }
   }
 
@@ -90,12 +90,12 @@ public class UserWorkManager {
       end = endDate.format(dateFormatter);
     }
 
-    String jsonString = jiraRestManager.getWorklogsFromTimeSheet(primarySpecific, start, end);
+    String jsonString = jiraManager.getWorklogsFromTimeSheet(primarySpecific, start, end, "");
     JSONArray worklogsArray = new JSONArray(jsonString);
     HashMap<String, Worklog> issueMap = new HashMap<>();
     for (int i = 0; i < worklogsArray.length(); i++) {
       JSONObject w = worklogsArray.getJSONObject(i);
-      Worklog worklog = new WorklogManipulation().createWorklogFromJson(w);
+      Worklog worklog = new WorklogService().createWorklogFromJson(w);
       issueMap.put(worklog.getIssueKey(), worklog);
     }
     return issueMap;
@@ -105,10 +105,10 @@ public class UserWorkManager {
   public void generateWorkLogs() throws Exception {
     HashMap<String, Worklog> worklogsOfUser = getWorklogsOfUser(null, null);
     if (worklogsOfUser.size() == 0) {
-      createFullWorkLogs(jiraRestManager
+      createFullWorkLogs(jiraManager
           .getWorkingIssuesOfUser(primarySpecific.getJiraUrl(), primarySpecific.getLoginData()));
     } else {
-      createReducedWorkLogs(getWorklogsOfUser(null, null), jiraRestManager
+      createReducedWorkLogs(getWorklogsOfUser(null, null), jiraManager
           .getWorkingIssuesOfUser(primarySpecific.getJiraUrl(), primarySpecific.getLoginData()));
     }
 

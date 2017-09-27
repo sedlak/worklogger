@@ -1,7 +1,7 @@
 package cz.morosystems.worklogger;
 
-import cz.morosystems.worklogger.daylogger.UserWorkManager;
-import cz.morosystems.worklogger.synchronizator.WorkLogSynchronizator;
+import cz.morosystems.worklogger.daylogger.DayloggerService;
+import cz.morosystems.worklogger.synchronizator.SynchronizatorService;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
@@ -29,10 +29,10 @@ public class CLIRunner {
 			CommandLine cmdLine = parser.parse(opts, args);
 
 			if (cmdLine.hasOption("logwork")) {
-				UserWorkManager userWorkManager = new UserWorkManager("/connection.properties");
-				userWorkManager.generateWorkLogs();
+				DayloggerService dayloggerService = new DayloggerService("/connection.properties");
+				dayloggerService.generateWorkLogs();
 			} else if (cmdLine.hasOption("sync")) {
-				WorkLogSynchronizator synchronizator = new WorkLogSynchronizator();
+				SynchronizatorService synchronizator = new SynchronizatorService();
 				synchronizator.syncAllDefinedProjects();
 
 			} else {
