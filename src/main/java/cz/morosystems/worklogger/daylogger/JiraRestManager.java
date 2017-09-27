@@ -1,14 +1,14 @@
-package cz.morosystems.worklogger;
+package cz.morosystems.worklogger.daylogger;
 
+import cz.morosystems.worklogger.common.CompanySpecifics;
+import cz.morosystems.worklogger.common.Worklog;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
-import java.time.format.DateTimeFormatter;
 import org.apache.commons.io.IOUtils;
-import org.joda.time.DateTime;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

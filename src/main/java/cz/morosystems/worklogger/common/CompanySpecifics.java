@@ -1,4 +1,4 @@
-package cz.morosystems.worklogger;
+package cz.morosystems.worklogger.common;
 
 import java.util.Base64;
 import java.util.Properties;

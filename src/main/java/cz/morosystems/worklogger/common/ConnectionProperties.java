@@ -1,4 +1,4 @@
-package cz.morosystems.worklogger;
+package cz.morosystems.worklogger.common;
 
 import java.io.IOException;
 import java.util.Properties;

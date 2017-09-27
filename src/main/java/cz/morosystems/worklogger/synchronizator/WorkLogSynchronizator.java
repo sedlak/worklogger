@@ -1,5 +1,8 @@
-package cz.morosystems.worklogger;
+package cz.morosystems.worklogger.synchronizator;
 
+import cz.morosystems.worklogger.common.CompanySpecifics;
+import cz.morosystems.worklogger.common.Perspective;
+import cz.morosystems.worklogger.common.Worklog;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;

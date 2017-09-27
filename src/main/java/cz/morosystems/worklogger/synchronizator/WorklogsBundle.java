@@ -1,5 +1,7 @@
-package cz.morosystems.worklogger;
+package cz.morosystems.worklogger.synchronizator;
 
+import cz.morosystems.worklogger.common.CompanySpecifics;
+import cz.morosystems.worklogger.common.Worklog;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
