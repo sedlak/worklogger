@@ -1,4 +1,4 @@
-package cz.morosystems.worklogger.synchronizator;
+package cz.morosystems.worklogger.domain;
 
 /**
  * @author Pavol Sedlak

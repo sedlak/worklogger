@@ -1,4 +1,4 @@
-package cz.morosystems.worklogger.common;
+package cz.morosystems.worklogger.domain;
 
 /**
  * @author Pavol Sedlak

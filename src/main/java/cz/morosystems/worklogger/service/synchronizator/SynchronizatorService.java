@@ -1,12 +1,13 @@
-package cz.morosystems.worklogger.synchronizator;
+package cz.morosystems.worklogger.service.synchronizator;
 
-import cz.morosystems.worklogger.common.CompanySpecifics;
-import cz.morosystems.worklogger.common.HttpClient;
-import cz.morosystems.worklogger.common.JiraManager;
-import cz.morosystems.worklogger.common.Perspective;
-import cz.morosystems.worklogger.common.Worklog;
-import cz.morosystems.worklogger.common.WorklogService;
-import java.io.FileInputStream;
+import cz.morosystems.worklogger.domain.WorkloggerProperties;
+import cz.morosystems.worklogger.domain.JiraQueryDetails;
+import cz.morosystems.worklogger.service.common.JiraService;
+import cz.morosystems.worklogger.domain.Perspective;
+import cz.morosystems.worklogger.domain.SyncPeriod;
+import cz.morosystems.worklogger.domain.Worklog;
+import cz.morosystems.worklogger.service.common.WorklogService;
+import cz.morosystems.worklogger.domain.WorklogsBundle;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.time.LocalDate;
@@ -14,7 +15,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Properties;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -32,16 +32,16 @@ public class SynchronizatorService {
   private static final Logger logger = LoggerFactory.getLogger(SynchronizatorService.class);
   private static final DateTimeFormatter dateTimeFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-  private final Properties properties;
+  private final WorkloggerProperties properties;
   private final SyncPeriod period;
 
-  private JiraManager jiraManager;
+  private JiraService jiraService = new JiraService();
+  private WorklogService worklogService = new WorklogService();
 
 
-  public SynchronizatorService() throws IOException {
-    properties = loadProperties();
+  public SynchronizatorService(WorkloggerProperties properties) throws IOException {
+    this.properties = properties;
     period = detectSyncPeriod();
-    jiraManager = new JiraManager();
   }
 
   private SyncPeriod detectSyncPeriod() {
@@ -53,10 +53,7 @@ public class SynchronizatorService {
   }
 
   public void syncAllDefinedProjects() {
-    int projectToSynchronizeCount = properties.keySet().stream().mapToInt(key -> {
-      String propKey = (String) key;
-      return Integer.valueOf(propKey.split("\\.")[0]);
-    }).max().getAsInt();
+    int projectToSynchronizeCount = properties.getCountOfProjects();
 
     logger.info("Found {} projects", projectToSynchronizeCount);
 
@@ -67,8 +64,10 @@ public class SynchronizatorService {
         logger.info("Going to synchronize project #{}", i);
 
         syncWorklogs(
-            new CompanySpecifics(i, Perspective.PRIMARY, properties),
-            new CompanySpecifics(i, Perspective.MIRROR, properties)
+            new JiraQueryDetails(Perspective.PRIMARY,
+                properties.getSpecificProperties(i, Perspective.PRIMARY)),
+            new JiraQueryDetails(Perspective.MIRROR,
+                properties.getSpecificProperties(i, Perspective.MIRROR))
         );
       } catch (IOException e) {
         logger.error("Ooops, Unable to synchronize project number " + i, e);
@@ -77,7 +76,7 @@ public class SynchronizatorService {
 
   }
 
-  private void syncWorklogs(CompanySpecifics primarySpecifics, CompanySpecifics mirrorSpecifics)
+  private void syncWorklogs(JiraQueryDetails primarySpecifics, JiraQueryDetails mirrorSpecifics)
       throws IOException {
     WorklogsBundle primaryBundle = getWorklogsBundle(primarySpecifics);
     WorklogsBundle mirrorBundle = getWorklogsBundle(mirrorSpecifics);
@@ -130,12 +129,12 @@ public class SynchronizatorService {
         if (daysToSync.contains(key)) {
           list.forEach(primaryWorklog -> {
             boolean isInSync = mirrorBundle.getWorklogsMap().getOrDefault(key, new ArrayList<>())
-                .stream().anyMatch((mirrorWorklog -> new WorklogService()
+                .stream().anyMatch((mirrorWorklog -> worklogService
                     .worklogCompare(primaryWorklog, mirrorWorklog, mirrorBundle.getSpecifics())));
             primaryWorklog.setInSync(isInSync);
             if (!isInSync) {
               try {
-                jiraManager.writeWorklog(mirrorBundle.getSpecifics(), primaryWorklog);
+                jiraService.writeWorklog(mirrorBundle.getSpecifics(), primaryWorklog);
                 primaryWorklog.setOppositeWorklogCreated(true);
               } catch (IOException e) {
                 logger.error("Unable to create worklog to JIRA", e);
@@ -167,7 +166,7 @@ public class SynchronizatorService {
         primaryBundle.getSuccessfullyCreatedWorklogsCount());
   }
 
-  private WorklogsBundle getWorklogsBundle(CompanySpecifics specifics) throws IOException {
+  private WorklogsBundle getWorklogsBundle(JiraQueryDetails specifics) throws IOException {
     String jsonString = getWorklogs(specifics);
     SortedMap<String, List<Worklog>> result = new TreeMap<>();
 
@@ -180,7 +179,7 @@ public class SynchronizatorService {
     JSONArray worklogsArray = new JSONArray(jsonString);
     for (int i = 0; i < worklogsArray.length(); i++) {
       JSONObject w = worklogsArray.getJSONObject(i);
-      Worklog worklog = new WorklogService().createWorklogFromJson(w);
+      Worklog worklog = worklogService.createWorklogFromJson(w);
       String key = worklog.getDate();
       List<Worklog> list = result.getOrDefault(key, new ArrayList<>());
 
@@ -198,19 +197,19 @@ public class SynchronizatorService {
     return new WorklogsBundle(specifics, result);
   }
 
-  public String getWorklogs(CompanySpecifics specifics) throws IOException {
+  public String getWorklogs(JiraQueryDetails specifics) throws IOException {
     logVisualDelimiter();
     logger.info("Getting {} worklogs for {} project", specifics.getPerspective(),
         specifics.getJiraProjectKey());
-    return new JiraManager()
+    return jiraService
         .getWorklogsFromTimeSheet(specifics, getStartOfCurrentPeriod(), getEndOfCurrentPeriod(),
             "projectKey=" + specifics.getJiraProjectKey());
   }
 
-  private Set<String> getParentIssueSubtasks(CompanySpecifics specifics) throws IOException {
+  private Set<String> getParentIssueSubtasks(JiraQueryDetails specifics) throws IOException {
     String parentIssueKey = specifics.getJiraParentIssueKey();
     logger.info("Getting {} parent issue detail {}", specifics.getPerspective(), parentIssueKey);
-    String parentIssueJsonString = new JiraManager().getIssueDetail(specifics, parentIssueKey);
+    String parentIssueJsonString = jiraService.getIssueDetail(specifics, parentIssueKey);
     Set<String> result = new HashSet<>();
     result.add(parentIssueKey);
 
@@ -263,14 +262,5 @@ public class SynchronizatorService {
     logger.info("-----------------------------------------------------------");
   }
 
-  private Properties loadProperties() throws IOException {
-    Properties props = new Properties();
-    props.load(new FileInputStream("wls.properties"));
-    return props;
-  }
-
-  public Properties getProperties() {
-    return properties;
-  }
 
 }

@@ -1,4 +1,4 @@
-package cz.morosystems.worklogger.common;
+package cz.morosystems.worklogger.service.common;
 
 import com.atlassian.jira.rest.client.api.JiraRestClient;
 import com.atlassian.jira.rest.client.api.SearchRestClient;
@@ -17,11 +17,10 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * Created by moro on 9/27/2017.
- */
-public class HttpClient {
-  private static final Logger logger = LoggerFactory.getLogger(HttpClient.class);
+
+public class JiraClient {
+
+  private static final Logger logger = LoggerFactory.getLogger(JiraClient.class);
 
   public String makeHttpGet(String restUrl, String credentials) throws IOException {
     URLConnection connection = new URL(restUrl).openConnection();
@@ -49,28 +48,29 @@ public class HttpClient {
     w.close();
 
     int responseCode = 0;
-    try{
+    try {
       responseCode = con.getResponseCode();
-    }catch (IOException e){
+    } catch (IOException e) {
       logger.error("Unable to get response code", e);
     }
 
     String result = null;
-    try{
+    try {
       InputStream response = con.getInputStream();
       result = IOUtils.toString(response);
-    }catch (IOException e){
+    } catch (IOException e) {
       logger.error("Unable to get response body", e);
     }
 
-    if(responseCode != 201){
+    if (responseCode != 201) {
       logger.error("Response Code: {}", responseCode);
       logger.error("Response Body: {}", result);
       throw new IOException("Nepodarilo sa zapisat pracu! ResponseCode = " + responseCode);
     }
   }
 
-  public SearchResult searchJql(String jiraUri, String credentials, String searchQuery) throws URISyntaxException {
+  public SearchResult searchJql(String jiraUri, String credentials, String searchQuery)
+      throws URISyntaxException {
     logger.info("Connecting to {}", jiraUri);
     AsynchronousJiraRestClientFactory factory = new AsynchronousJiraRestClientFactory();
     URI serverUri = new URI(jiraUri);
