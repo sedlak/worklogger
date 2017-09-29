@@ -65,11 +65,11 @@ public class SynchronizatorService {
 
         syncWorklogs(
             new JiraQueryDetails(Perspective.PRIMARY,
-                properties.getCredentialsProperties(Perspective.PRIMARY.name() + "."),
-                properties.getProjectProperties(i + "." + Perspective.PRIMARY.name() + ".")),
+                properties.getCredentialsProperties(Perspective.PRIMARY),
+                properties.getProjectProperties(i, Perspective.PRIMARY)),
             new JiraQueryDetails(Perspective.MIRROR,
-                properties.getCredentialsProperties(Perspective.MIRROR.name() + "."),
-                properties.getProjectProperties(i + "." + Perspective.MIRROR.name() + "."))
+                properties.getCredentialsProperties(Perspective.MIRROR),
+                properties.getProjectProperties(i, Perspective.MIRROR))
 
         );
       } catch (IOException e) {

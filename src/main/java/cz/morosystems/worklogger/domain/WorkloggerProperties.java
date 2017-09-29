@@ -11,7 +11,8 @@ public class WorkloggerProperties {
   private Properties credentialsProperties;
   private Properties synchronizatorProperties;
 
-  public WorkloggerProperties(String credentialsPropertiesFileName, String synchronizatorPropertiesFileName) throws IOException {
+  public WorkloggerProperties(String credentialsPropertiesFileName,
+      String synchronizatorPropertiesFileName) throws IOException {
     credentialsProperties = loadProperties(credentialsPropertiesFileName);
     synchronizatorProperties = loadProperties(synchronizatorPropertiesFileName);
   }
@@ -22,12 +23,12 @@ public class WorkloggerProperties {
     return properties;
   }
 
-  public Properties getCredentialsProperties(String prefix){
-    return getSpecificProperties(prefix,credentialsProperties);
+  public Properties getCredentialsProperties(Perspective perspective) {
+    return getSpecificProperties(perspective.name() + ".", credentialsProperties);
   }
 
-  public Properties getProjectProperties(String prefix){
-    return getSpecificProperties(prefix,synchronizatorProperties);
+  public Properties getProjectProperties(int i, Perspective perspective) {
+    return getSpecificProperties(i + "." + perspective.name() + ".", synchronizatorProperties);
   }
 
   private Properties getSpecificProperties(String prefix, Properties properties) {
