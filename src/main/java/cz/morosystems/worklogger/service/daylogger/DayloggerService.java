@@ -37,6 +37,7 @@ public class DayloggerService {
 
 
   public void generateWorkLogs() throws Exception {
+  	logger.info("Going to create worklogs based on your JIRA activity");
     HashMap<String, Worklog> worklogsOfUser = getWorklogsOfUserToday();
     if (worklogsOfUser.size() == 0) {
       createFullWorkLogs(jiraService

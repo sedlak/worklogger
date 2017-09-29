@@ -53,6 +53,8 @@ public class SynchronizatorService {
   }
 
   public void syncAllDefinedProjects() {
+  	logger.info("Going to synchronize worklogs between JIRA instances");
+
     int projectToSynchronizeCount = properties.getCountOfProjects();
 
     logger.info("Found {} projects", projectToSynchronizeCount);
