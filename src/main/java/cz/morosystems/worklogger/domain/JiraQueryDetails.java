@@ -19,16 +19,16 @@ public class JiraQueryDetails {
   private String jiraParentIssueKey;
 
 
-  public JiraQueryDetails(Perspective perspective, Properties props) {
+  public JiraQueryDetails(Perspective perspective, Properties connectionProperties, Properties projectPropertie) {
     this.perspective = perspective;
-    this.commentAlsoWithIssueInfo = Boolean.valueOf(props.getProperty("commentWithIssueInfo"));
-    this.username = props.getProperty("username");
-    String login = props.getProperty("username") + ":" + props.getProperty("password");
+    this.username = connectionProperties.getProperty("username");
+    String login = connectionProperties.getProperty("username") + ":" + connectionProperties.getProperty("password");
     this.loginData = Base64.getEncoder().encodeToString(login.getBytes());
-    this.jiraProjectKey = props.getProperty("jiraProjectKey");
-    this.jiraIssueKey = props.getProperty("jiraIssueKey");
-    this.jiraUrl = fixJiraUrl(props.getProperty("jiraUrl"));
-    this.jiraParentIssueKey = props.getProperty("jiraParentIssueKey");
+    this.jiraUrl = fixJiraUrl(connectionProperties.getProperty("jiraUrl"));
+    this.commentAlsoWithIssueInfo = Boolean.valueOf(projectPropertie.getProperty("commentWithIssueInfo"));
+    this.jiraProjectKey = projectPropertie.getProperty("jiraProjectKey");
+    this.jiraIssueKey = projectPropertie.getProperty("jiraIssueKey");
+    this.jiraParentIssueKey = projectPropertie.getProperty("jiraParentIssueKey");
 
   }
 

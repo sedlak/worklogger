@@ -28,7 +28,8 @@ public class CLIRunner {
       // parse the command line arguments
       initialize();
       CommandLine cmdLine = parser.parse(opts, args);
-      WorkloggerProperties properties = new WorkloggerProperties("wls.properties");
+      WorkloggerProperties properties = new WorkloggerProperties(
+          "worklogger-jira-credentials.properties", "worklogger-jira-synchronizator.properties");
       if (cmdLine.hasOption("logwork")) {
         DayloggerService dayloggerService = new DayloggerService(properties);
         dayloggerService.generateWorkLogs();

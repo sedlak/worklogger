@@ -8,31 +8,40 @@ import java.util.Properties;
 
 public class WorkloggerProperties {
 
-  private Properties properties;
+  private Properties credentialsProperties;
+  private Properties synchronizatorProperties;
 
-  public WorkloggerProperties(String propertiesFileName) throws IOException {
-    properties = loadProperties(propertiesFileName);
+  public WorkloggerProperties(String credentialsPropertiesFileName, String synchronizatorPropertiesFileName) throws IOException {
+    credentialsProperties = loadProperties(credentialsPropertiesFileName);
+    synchronizatorProperties = loadProperties(synchronizatorPropertiesFileName);
   }
 
   private Properties loadProperties(String fileName) throws IOException {
-    properties = new Properties();
+    Properties properties = new Properties();
     properties.load(new FileInputStream(fileName));
     return properties;
   }
 
-  public Properties getSpecificProperties(int sequenceNumber, Perspective perspective) {
+  public Properties getCredentialsProperties(String prefix){
+    return getSpecificProperties(prefix,credentialsProperties);
+  }
+
+  public Properties getProjectProperties(String prefix){
+    return getSpecificProperties(prefix,synchronizatorProperties);
+  }
+
+  private Properties getSpecificProperties(String prefix, Properties properties) {
     Properties prop = new Properties();
-    Enumeration<String> enumeration = (Enumeration<String>) properties.propertyNames();
     for (String key : properties.stringPropertyNames()) {
-      if (key.startsWith(sequenceNumber + "." + perspective)) {
-        prop.setProperty(key.split("\\.")[2], properties.getProperty(key));
+      if (key.startsWith(prefix)) {
+        prop.setProperty(key.substring(prefix.length()), properties.getProperty(key));
       }
     }
     return prop;
   }
 
   public int getCountOfProjects() {
-    return properties.keySet().stream().mapToInt(key -> {
+    return synchronizatorProperties.keySet().stream().mapToInt(key -> {
       String propKey = (String) key;
       return Integer.valueOf(propKey.split("\\.")[0]);
     }).max().getAsInt();

@@ -65,9 +65,12 @@ public class SynchronizatorService {
 
         syncWorklogs(
             new JiraQueryDetails(Perspective.PRIMARY,
-                properties.getSpecificProperties(i, Perspective.PRIMARY)),
+                properties.getCredentialsProperties(Perspective.PRIMARY.name() + "."),
+                properties.getProjectProperties(i + "." + Perspective.PRIMARY.name() + ".")),
             new JiraQueryDetails(Perspective.MIRROR,
-                properties.getSpecificProperties(i, Perspective.MIRROR))
+                properties.getCredentialsProperties(Perspective.MIRROR.name() + "."),
+                properties.getProjectProperties(i + "." + Perspective.MIRROR.name() + "."))
+
         );
       } catch (IOException e) {
         logger.error("Ooops, Unable to synchronize project number " + i, e);
@@ -198,8 +201,9 @@ public class SynchronizatorService {
   }
 
   public String getWorklogs(JiraQueryDetails specifics) throws IOException {
-  	logVisualDelimiter();
-    return jiraService.getWorklogsFromTimeSheet(specifics, getStartOfCurrentPeriod(), getEndOfCurrentPeriod(),
+    logVisualDelimiter();
+    return jiraService
+        .getWorklogsFromTimeSheet(specifics, getStartOfCurrentPeriod(), getEndOfCurrentPeriod(),
             "projectKey=" + specifics.getJiraProjectKey());
   }
 

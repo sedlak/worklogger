@@ -31,7 +31,8 @@ public class DayloggerService {
 
   public DayloggerService(WorkloggerProperties properties) {
     companySpecific = new JiraQueryDetails(Perspective.PRIMARY,
-        properties.getSpecificProperties(1, Perspective.PRIMARY));
+        properties.getCredentialsProperties(Perspective.PRIMARY.name() + "."),
+        properties.getProjectProperties("1." + Perspective.PRIMARY.name() + "."));
   }
 
 
