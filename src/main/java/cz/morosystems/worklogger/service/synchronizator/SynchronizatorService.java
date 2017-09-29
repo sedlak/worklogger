@@ -198,11 +198,8 @@ public class SynchronizatorService {
   }
 
   public String getWorklogs(JiraQueryDetails specifics) throws IOException {
-    logVisualDelimiter();
-    logger.info("Getting {} worklogs for {} project", specifics.getPerspective(),
-        specifics.getJiraProjectKey());
-    return jiraService
-        .getWorklogsFromTimeSheet(specifics, getStartOfCurrentPeriod(), getEndOfCurrentPeriod(),
+  	logVisualDelimiter();
+    return jiraService.getWorklogsFromTimeSheet(specifics, getStartOfCurrentPeriod(), getEndOfCurrentPeriod(),
             "projectKey=" + specifics.getJiraProjectKey());
   }
 
