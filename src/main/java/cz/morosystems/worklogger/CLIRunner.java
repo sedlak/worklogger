@@ -18,6 +18,9 @@ public class CLIRunner {
 
   private static final Logger logger = LoggerFactory.getLogger(CLIRunner.class);
 
+  public static final String CLI_OPTION_SYNC = "sync";
+  public static final String CLI_OPTION_DAYLOG = "daylog";
+
   private Options opts;
   private CommandLineParser parser;
   private HelpFormatter formatter;
@@ -28,21 +31,26 @@ public class CLIRunner {
       // parse the command line arguments
       initialize();
       CommandLine cmdLine = parser.parse(opts, args);
-      WorkloggerProperties properties = new WorkloggerProperties("wls.properties");
-      if (cmdLine.hasOption("logwork")) {
+      WorkloggerProperties properties = new WorkloggerProperties(
+          "worklogger-jira-credentials.properties", "worklogger-jira-synchronizator.properties");
+
+      if (cmdLine.hasOption(CLI_OPTION_DAYLOG)) {
         DayloggerService dayloggerService = new DayloggerService(properties);
         dayloggerService.generateWorkLogs();
       }
-      if (cmdLine.hasOption("sync")) {
+
+      if (cmdLine.hasOption(CLI_OPTION_SYNC)) {
         SynchronizatorService synchronizator = new SynchronizatorService(properties);
         synchronizator.syncAllDefinedProjects();
 
       }
-      /*if (!cmdLine.hasOption("sync") && cmdLine.hasOption("logwork")) {
-        formatter.printHelp("Work Logger", opts);
+
+      if (!cmdLine.hasOption(CLI_OPTION_SYNC)
+			  && !cmdLine.hasOption(CLI_OPTION_DAYLOG)) {
+        formatter.printHelp("worklogger", opts);
         System.exit(1);
       }
-      */
+
 
     } catch (Exception e) {
       logger.error("Oooops, problem!", e);
@@ -52,10 +60,9 @@ public class CLIRunner {
 
   private void initialize() {
     opts = new Options().
-        addOption("sync", "Synchronize.").
-        addOption("logwork", "Run work logging.");
+        addOption(CLI_OPTION_DAYLOG, "Create worklogs based on todays JIRA activity").
+        addOption(CLI_OPTION_SYNC, "Synchronize worklogs between JIRA instances");
     parser = new DefaultParser();
     formatter = new HelpFormatter();
-
   }
 }

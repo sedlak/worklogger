@@ -31,11 +31,13 @@ public class DayloggerService {
 
   public DayloggerService(WorkloggerProperties properties) {
     companySpecific = new JiraQueryDetails(Perspective.PRIMARY,
-        properties.getSpecificProperties(1, Perspective.PRIMARY));
+        properties.getCredentialsProperties(Perspective.PRIMARY),
+        properties.getProjectProperties(1, Perspective.PRIMARY));
   }
 
 
   public void generateWorkLogs() throws Exception {
+  	logger.info("Going to create worklogs based on your JIRA activity");
     HashMap<String, Worklog> worklogsOfUser = getWorklogsOfUserToday();
     if (worklogsOfUser.size() == 0) {
       createFullWorkLogs(jiraService

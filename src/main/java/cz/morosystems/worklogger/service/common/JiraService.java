@@ -69,9 +69,8 @@ public class JiraService {
         + "?"
         + "dateFrom=" + startDay + "&"
         + "dateTo=" + endDay + "&"
-        + "username=" + specifics.getUsername()// + "&"
+        + "username=" + specifics.getUsername() + "&"
         + additionalSelectionCriteria;
-    //+ "projectKey=" + specifics.getJiraProjectKey();
     logger.info("URL: {}", restUrl);
     return jiraClient.makeHttpGet(restUrl, specifics.getLoginData());
   }
