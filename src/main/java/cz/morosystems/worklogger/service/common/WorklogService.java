@@ -5,6 +5,8 @@ import cz.morosystems.worklogger.domain.JiraQueryDetails;
 import cz.morosystems.worklogger.domain.Worklog;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import org.joda.time.DateTime;
+import org.joda.time.LocalDateTime;
 import org.json.JSONObject;
 
 public class WorklogService {
@@ -28,7 +30,7 @@ public class WorklogService {
     return new Worklog(
         w.getJSONObject("issue").getString("key"),
         w.getJSONObject("issue").getString("summary"),
-        w.getString("dateStarted"),
+        w.getString("dateStarted") + "+0200",
         w.getString("comment"),
         w.getInt("timeSpentSeconds")
     );

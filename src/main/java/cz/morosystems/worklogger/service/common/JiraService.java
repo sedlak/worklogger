@@ -37,8 +37,19 @@ public class JiraService {
         + "}";
 
     logger.info("Creating {} worklog: {}", specifics.getPerspective(), json);
-    String url =
-        specifics.getJiraUrl() + "/rest/api/2/issue/" + worklog.getIssueKey() + "/worklog/";
+    String url;
+    //zapisujeme worklog z jednej jiy do druhej
+    if (specifics.getJiraIssueKey() != null){
+      url =
+          specifics.getJiraUrl() + "/rest/api/2/issue/" + specifics.getJiraIssueKey() + "/worklog/";
+
+    }
+    //zapisujeme worklog do jednej jiry vytvoreny na zaklade dotiahnutych info o nasich aktivitach na tasku
+    else {
+      url =
+          specifics.getJiraUrl() + "/rest/api/2/issue/" + worklog.getIssueKey() + "/worklog/";
+    }
+
     jiraClient.makeHttpPost(json, url, specifics.getLoginData());
   }
 
