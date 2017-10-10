@@ -89,7 +89,7 @@ public class DayloggerService {
       Worklog worklog = worklogService
           .createWorkLogFromIssue(issues.get(i), timeSpent.get(i) * 60 * 60);
       try {
-        jiraService.writeWorklog(companySpecific, worklog);
+        jiraService.writeWorklog(companySpecific, worklog.getIssueKey(), worklog);
       } catch (Exception e) {
         logger.error("Unable to write worklog " + worklog.toString());
       }

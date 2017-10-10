@@ -139,7 +139,10 @@ public class SynchronizatorService {
             primaryWorklog.setInSync(isInSync);
             if (!isInSync) {
               try {
-                jiraService.writeWorklog(mirrorBundle.getSpecifics(), primaryWorklog);
+                jiraService.writeWorklog(
+                		mirrorBundle.getSpecifics(),
+						mirrorBundle.getSpecifics().getJiraIssueKey(),
+						primaryWorklog);
                 primaryWorklog.setOppositeWorklogCreated(true);
               } catch (IOException e) {
                 logger.error("Unable to create worklog to JIRA", e);
