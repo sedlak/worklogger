@@ -3,6 +3,9 @@ package cz.morosystems.worklogger.service.common;
 import com.atlassian.jira.rest.client.api.domain.Issue;
 import cz.morosystems.worklogger.domain.JiraQueryDetails;
 import cz.morosystems.worklogger.domain.Worklog;
+
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import org.json.JSONObject;
@@ -25,10 +28,11 @@ public class WorklogService {
   }
 
   public Worklog createWorklogFromJson(JSONObject w) {
+  	String dateStarted = LocalDateTime.parse(w.getString("dateStarted")).atZone(ZoneId.systemDefault()).format(dateTimeFormat);
     return new Worklog(
         w.getJSONObject("issue").getString("key"),
         w.getJSONObject("issue").getString("summary"),
-        w.getString("dateStarted"),
+		dateStarted,
         w.getString("comment"),
         w.getInt("timeSpentSeconds")
     );
@@ -38,11 +42,9 @@ public class WorklogService {
     return new Worklog(
         issue.getKey(), //key
         issue.getSummary(), //summary
-        ZonedDateTime.now().format(dateTimeFormat), //dateStarted TODO: aky cas?
+        ZonedDateTime.now().format(dateTimeFormat),
         "Implementation.",
         time); //timeSpentSeconds
 
   }
-
-
 }

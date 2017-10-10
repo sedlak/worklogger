@@ -18,8 +18,8 @@ public class JiraService {
   private JiraClient jiraClient = new JiraClient();
 
 
-  public void writeWorklog(JiraQueryDetails specifics, Worklog worklog) throws IOException {
-    String comment = specifics.isCommentAlsoWithIssueInfo() ?
+  public void writeWorklog(JiraQueryDetails jiraDetails, String issueKey, Worklog worklog) throws IOException {
+    String comment = jiraDetails.isCommentAlsoWithIssueInfo() ?
         worklog.getIssueKey() + " " + worklog.getIssueSummary() + " - " + worklog.getComment() :
         worklog.getComment();
 
@@ -36,10 +36,9 @@ public class JiraService {
         + "\"timeSpentSeconds\": \"" + worklog.getTimeSpentSeconds() + "\""
         + "}";
 
-    logger.info("Creating {} worklog: {}", specifics.getPerspective(), json);
-    String url =
-        specifics.getJiraUrl() + "/rest/api/2/issue/" + worklog.getIssueKey() + "/worklog/";
-    jiraClient.makeHttpPost(json, url, specifics.getLoginData());
+    logger.info("Creating {} worklog: {}", jiraDetails.getPerspective(), json);
+    String url = jiraDetails.getJiraUrl() + "/rest/api/2/issue/" + issueKey + "/worklog/";
+    jiraClient.makeHttpPost(json, url, jiraDetails.getLoginData());
   }
 
   public HashMap<String, Issue> getWorkingIssuesOfUser(String jiraUri, String credentials)
