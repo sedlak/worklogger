@@ -37,7 +37,7 @@ public class JiraService {
 			+ "}";
 
 		logger.info("Creating {} worklog: {}", jiraDetails.getPerspective(), json);
-		String url = jiraDetails.getJiraUrl() + "/rest/api/2/issue/" + issueKey + "/worklog/";
+		String url = jiraDetails.getJiraUrl() + "/rest/api/latest/issue/" + issueKey + "/worklog/";
 		jiraClient.makeHttpPost(json, url, jiraDetails.getLoginData());
 	}
 
@@ -75,7 +75,7 @@ public class JiraService {
 	}
 
 	public String getIssueDetail(JiraQueryDetails specifics, String issueKey) throws IOException {
-		String restUrl = specifics.getJiraUrl() + "/rest/api/2/issue/" + issueKey;
+		String restUrl = specifics.getJiraUrl() + "/rest/api/latest/issue/" + issueKey;
 		logger.info("URL: {}", restUrl);
 		return jiraClient.makeHttpGet(restUrl, specifics.getLoginData());
 
