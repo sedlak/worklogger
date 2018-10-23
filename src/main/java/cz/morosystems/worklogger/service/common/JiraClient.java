@@ -16,7 +16,9 @@ import com.atlassian.jira.rest.client.api.JiraRestClient;
 import com.atlassian.jira.rest.client.api.SearchRestClient;
 import com.atlassian.jira.rest.client.api.domain.SearchResult;
 import com.atlassian.jira.rest.client.internal.async.AsynchronousJiraRestClientFactory;
-import com.atlassian.util.concurrent.Promise;
+
+import io.atlassian.util.concurrent.Promise;
+//import sun.util.logging.PlatformLogger.Level;
 
 public class JiraClient {
 
@@ -26,6 +28,8 @@ public class JiraClient {
 		URLConnection connection = new URL(restUrl).openConnection();
 		connection.setRequestProperty("Accept-Charset", "UTF-8");
 		connection.setRequestProperty("Authorization", "Basic " + credentials);
+//		sun.util.logging.PlatformLogger.getLogger("sun.net.www.protocol.http.HttpURLConnection").setLevel(Level.FINE);
+
 		InputStream response = connection.getInputStream();
 		String result = IOUtils.toString(response);
 		logger.info("Successfully retrieved response");

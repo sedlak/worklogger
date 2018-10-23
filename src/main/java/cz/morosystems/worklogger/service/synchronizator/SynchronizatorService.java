@@ -177,6 +177,8 @@ public class SynchronizatorService {
 
 	private WorklogsBundle getWorklogsBundle(JiraQueryDetails specifics) throws IOException {
 		String jsonString = getWorklogs(specifics);
+		logger.debug("incomming json:");
+		logger.debug(jsonString);
 		SortedMap<String, List<Worklog>> result = new TreeMap<>();
 
 		Set<String> issueKeyWhitelist = null;
