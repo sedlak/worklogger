@@ -98,7 +98,7 @@
         </executions>
         <configuration>
           <descriptors>
-            <descriptor>src\main\resources\assembly.xml</descriptor>
+            <descriptor>src/main/resources/assembly.xml</descriptor>
           </descriptors>
         </configuration>
       </plugin>
