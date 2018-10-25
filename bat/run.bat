@@ -1,2 +1,2 @@
-java -jar worklogger.jar
+java -jar worklogger.jar -sync
 pause
