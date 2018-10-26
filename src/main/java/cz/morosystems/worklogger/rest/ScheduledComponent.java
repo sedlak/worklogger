@@ -29,7 +29,7 @@ public class ScheduledComponent {
         sync();
     }
 
-    public void sync() {
+    public synchronized void sync() {
         SynchronizatorService synchronizator = null;
         try {
             synchronizator = new SynchronizatorService(getProperties());
